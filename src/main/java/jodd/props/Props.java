@@ -293,7 +293,7 @@ public class Props implements Cloneable {
 			if (value == null) {
 				continue;
 			}
-			data.putBaseProperty(name, value.toString(), false);
+			data.putBaseProperty(name, value.toString(), false, -1);
 		}
 		return this;
 	}
@@ -312,7 +312,7 @@ public class Props implements Cloneable {
 			if (value == null) {
 				continue;
 			}
-			data.putBaseProperty(realPrefix + name, value.toString(), false);
+			data.putBaseProperty(realPrefix + name, value.toString(), false, -1);
 		}
 		return this;
 	}
@@ -347,6 +347,12 @@ public class Props implements Cloneable {
 	 */
 	public int countTotalProperties() {
 		return data.countBaseProperties() + data.countProfileProperties();
+	}
+
+
+	public PropsEntry getPropsEntry(String key){
+		initialize();
+		return data.getBaseProperty(key);
 	}
 
 	/**
@@ -546,9 +552,9 @@ public class Props implements Cloneable {
 	 */
 	public void setValue(final String key, final String value, final String profile) {
 		if (profile == null) {
-			data.putBaseProperty(key, value, false);
+			data.putBaseProperty(key, value, false, -1);
 		} else {
-			data.putProfileProperty(key, value, profile, false);
+			data.putProfileProperty(key, value, profile, false, -1);
 		}
 		initialized = false;
 	}

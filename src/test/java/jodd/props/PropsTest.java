@@ -439,6 +439,7 @@ class PropsTest extends BasePropsTest {
 		assertEquals("info@jodd.org;patrick@jodd.org", p.getValue("email.from"));
 		assertEquals("[ERROR] Got %s exceptions", p.getValue("email.subject"));
 		assertEquals("line1\n\tline2\nline3", p.getValue("email.text"));
+
 	}
 
 	@Test
@@ -451,7 +452,39 @@ class PropsTest extends BasePropsTest {
 		assertEquals("aaa", p.getValue("email.header"));
 	}
 
+
 	@Test
+	void testMultiline2Value() throws IOException {
+		Props p = new Props();
+		p.setValueTrimLeft(false);
+		p.load(readDataFile("test3-multiline.props"));
+
+//		assertEquals(System.lineSeparator() + "\tHello from" + System.lineSeparator() + "\tthe multiline" + System.lineSeparator() + "\tvalue" + System.lineSeparator(), p.getValue("email.footer"));
+		System.out.println("'"+p.getValue("email.subject")+"'");
+		System.out.println("'"+p.getValue("email.header")+"'");
+		System.out.println("'"+p.getValue("email.footer")+"'");
+	}
+
+	@Test
+	void testPropsLineNumber() throws IOException {
+		Props p = new Props();
+		p.setValueTrimLeft(true);
+		p.load(readDataFile("test3-multiline.props"));
+
+//		assertEquals(System.lineSeparator() + "\tHello from" + System.lineSeparator() + "\tthe multiline" + System.lineSeparator() + "\tvalue" + System.lineSeparator(), p.getValue("email.footer"));
+		Iterator<PropsEntry> propsEntryIterator = p.iterator();
+		while (propsEntryIterator.hasNext()){
+			PropsEntry propsEntry = propsEntryIterator.next();
+			System.out.println("Line:"+propsEntry.getLineNumber()+" Key:"+propsEntry.getKey()+" Value: "+propsEntry.getValue());
+		}
+		System.out.println("-----------------------------");
+		assertEquals(2,  p.getPropsEntry("email.subject").getLineNumber());
+		assertEquals(3,  p.getPropsEntry("email.header").getLineNumber());
+		assertEquals(9,  p.getPropsEntry("email.footer").getLineNumber());
+		assertEquals(14,  p.getPropsEntry("email.copyright").getLineNumber());
+	}
+
+		@Test
 	void testAppend() {
 		Props p = new Props();
 		p.setAppendDuplicateProps(true);

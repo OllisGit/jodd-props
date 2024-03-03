@@ -15,3 +15,8 @@
 🏡 Website: [props.jodd.org](https://props.jodd.org)
 
 ❤️ For developers, by developer.
+
+## Difference between original repository (https://github.com/oblac/jodd-props)
+
+- PropsEntry now supports the linenumber, if props loaded via File or String (not Map)
+- Multiline marker (''') coud now start one space behind equal sign

@@ -132,6 +132,7 @@ public class PropsParser implements Cloneable {
 		boolean insideSection = false;
 		String currentSection = null;
 		String key = null;
+		int lineNumber = 1; // lineNumber of the current Key in properties-input
 		Operator operator = Operator.ASSIGN;
 		final StringBuilder sb = new StringBuilder();
 
@@ -140,7 +141,6 @@ public class PropsParser implements Cloneable {
 		while (ndx < len) {
 			final char c = in.charAt(ndx);
 			ndx++;
-
 			if (state == ParseState.COMMENT) {
 				// comment, skip to the end of the line
 				if (c == '\r') {
@@ -270,7 +270,7 @@ public class PropsParser implements Cloneable {
 
 					case '\r':
 					case '\n':
-						add(currentSection, key, sb, true, operator);
+						add(currentSection, key, sb, true, operator, lineNumber);
 						sb.setLength(0);
 						key = null;
 						operator = Operator.ASSIGN;
@@ -302,7 +302,7 @@ public class PropsParser implements Cloneable {
 								state = ParseState.VALUE;
 							}
 						} else {
-							add(currentSection, key, sb, true, operator);
+							add(currentSection, key, sb, true, operator, lineNumber);
 							sb.setLength(0);
 							key = null;
 							operator = Operator.ASSIGN;
@@ -322,10 +322,9 @@ public class PropsParser implements Cloneable {
 						state = ParseState.VALUE;
 
 						if (multilineValues) {
-							if (sb.length() == 3) {
-
+							if (sb.toString().trim().length() == 3) {
 								// check for ''' beginning
-								if (sb.toString().equals("'''")) {
+								if (sb.toString().trim().equals("'''")) {
 									sb.setLength(0);
 									int endIndex = in.indexOf("'''", ndx);
 									if (endIndex == -1) {
@@ -334,7 +333,14 @@ public class PropsParser implements Cloneable {
 									sb.append(in, ndx, endIndex);
 
 									// append
-									add(currentSection, key, sb, false, operator);
+									add(currentSection, key, sb, false, operator, lineNumber);
+									// increase linenumber depending on mulitline text linebreaks
+									for (int sbIndex = 0; sbIndex < sb.length(); sbIndex++) {
+										if(sb.charAt(sbIndex) == '\n'){
+											lineNumber++;
+										}
+									}
+									//
 									sb.setLength(0);
 									key = null;
 									operator = Operator.ASSIGN;
@@ -347,10 +353,14 @@ public class PropsParser implements Cloneable {
 						}
 				}
 			}
+			// next line break detection
+			if (c == '\n'){
+				lineNumber++;
+			}
 		}
 
 		if (key != null) {
-			add(currentSection, key, sb, true, operator);
+			add(currentSection, key, sb, true, operator, lineNumber);
 		}
 	}
 
@@ -361,7 +371,7 @@ public class PropsParser implements Cloneable {
 	 */
 	protected void add(
 			final String section, final String key,
-			final StringBuilder value, final boolean trim, final Operator operator) {
+			final StringBuilder value, final boolean trim, final Operator operator, final int lineNumber) {
 
 		// ignore lines without : or =
 		if (key == null) {
@@ -392,17 +402,17 @@ public class PropsParser implements Cloneable {
 			return;
 		}
 
-		extractProfilesAndAdd(fullKey, v, operator);
+		extractProfilesAndAdd(fullKey, v, operator, lineNumber);
 	}
 
 	/**
 	 * Extracts profiles from the key name and adds key-value to them.
 	 */
-	protected void extractProfilesAndAdd(final String key, final String value, final Operator operator) {
+	protected void extractProfilesAndAdd(final String key, final String value, final Operator operator, final int lineNumber) {
 		String fullKey = key;
 		int ndx = fullKey.indexOf(PROFILE_LEFT);
 		if (ndx == -1) {
-			justAdd(fullKey, value, null, operator);
+			justAdd(fullKey, value, null, operator, lineNumber);
 			return;
 		}
 
@@ -438,13 +448,13 @@ public class PropsParser implements Cloneable {
 		}
 
 		// add value to extracted profiles
-		justAdd(fullKey, value, keyProfiles, operator);
+		justAdd(fullKey, value, keyProfiles, operator, lineNumber);
 	}
 
 	/**
 	 * Core key-value addition.
 	 */
-	protected void justAdd(final String key, final String value, final ArrayList<String> keyProfiles, final Operator operator) {
+	protected void justAdd(final String key, final String value, final ArrayList<String> keyProfiles, final Operator operator, final int lineNumber) {
 		if (operator == Operator.COPY) {
 			final HashMap<String,Object> target = new HashMap<>();
 
@@ -491,10 +501,10 @@ public class PropsParser implements Cloneable {
 					newValue += "}";
 
 					if (profiles == null) {
-						propsData.putBaseProperty(newKey, newValue, false);
+						propsData.putBaseProperty(newKey, newValue, false, lineNumber);
 					} else {
 						for (final String p : profiles) {
-							propsData.putProfileProperty(newKey, newValue, p, false);
+							propsData.putProfileProperty(newKey, newValue, p, false, lineNumber);
 						}
 					}
 				}
@@ -504,11 +514,11 @@ public class PropsParser implements Cloneable {
 
 		final boolean append = operator == Operator.QUICK_APPEND;
 		if (keyProfiles == null) {
-			propsData.putBaseProperty(key, value, append);
+			propsData.putBaseProperty(key, value, append, lineNumber);
 			return;
 		}
 		for (final String p : keyProfiles) {
-			propsData.putProfileProperty(key, value, p, append);
+			propsData.putProfileProperty(key, value, p, append, lineNumber);
 		}
 
 	}

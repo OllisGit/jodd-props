@@ -45,12 +45,15 @@ public class PropsEntry {
 
 	protected final PropsData propsData;
 
-	public PropsEntry(final String key, final String value, final String profile, final PropsData propsData) {
+	protected final int lineNumber;
+
+	public PropsEntry(final String key, final String value, final String profile, final PropsData propsData, int lineNumber) {
 		this.value = value;
 		this.key = key;
 		this.profile = profile;
 		this.hasMacro = value.contains("${");
 		this.propsData = propsData;
+		this.lineNumber = lineNumber;
 	}
 
 	/**
@@ -75,6 +78,13 @@ public class PropsEntry {
 	 */
 	public String getKey() {
 		return key;
+	}
+
+	/**
+	 * Returns property key.
+	 */
+	public int getLineNumber() {
+		return lineNumber;
 	}
 
 	/**

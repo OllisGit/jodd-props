@@ -1,0 +1,14 @@
+
+email.subject = subject
+email.header='''
+	Hello from header
+	the multiline
+	value
+'''
+
+email.footer = '''
+	Hello from footer
+	the multiline
+	value
+'''
+email.copyright = by nobody

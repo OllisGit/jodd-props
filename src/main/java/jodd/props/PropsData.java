@@ -99,7 +99,7 @@ public class PropsData implements Cloneable {
 	/**
 	 * Puts key-value pair into the map, with respect of appending duplicate properties
 	 */
-	protected void put(final String profile, final Map<String, PropsEntry> map, final String key, final String value, final boolean append) {
+	protected void put(final String profile, final Map<String, PropsEntry> map, final String key, final String value, final boolean append, int lineNumber) {
 		String realValue = value;
 		if (append || appendDuplicateProps) {
 			final PropsEntry pv = map.get(key);
@@ -107,7 +107,7 @@ public class PropsData implements Cloneable {
 				realValue = pv.value + APPEND_SEPARATOR + realValue;
 			}
 		}
-		final PropsEntry propsEntry = new PropsEntry(key, realValue, profile, this);
+		final PropsEntry propsEntry = new PropsEntry(key, realValue, profile, this, lineNumber);
 
 		// update position pointers
 		if (first == null) {
@@ -133,8 +133,8 @@ public class PropsData implements Cloneable {
 	/**
 	 * Adds base property.
 	 */
-	public void putBaseProperty(final String key, final String value, final boolean append) {
-		put(null, baseProperties, key, value, append);
+	public void putBaseProperty(final String key, final String value, final boolean append, int lineNumber) {
+		put(null, baseProperties, key, value, append, lineNumber);
 	}
 
 	/**
@@ -166,9 +166,9 @@ public class PropsData implements Cloneable {
 	/**
 	 * Adds profile property.
 	 */
-	public void putProfileProperty(final String key, final String value, final String profile, final boolean append) {
+	public void putProfileProperty(final String key, final String value, final String profile, final boolean append, int lineNumber) {
 		final Map<String, PropsEntry> map = profileProperties.computeIfAbsent(profile, k -> new HashMap<>());
-		put(profile, map, key, value, append);
+		put(profile, map, key, value, append, lineNumber);
 	}
 
 	/**
